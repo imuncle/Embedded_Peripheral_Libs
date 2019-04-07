@@ -68,11 +68,6 @@ struct MPU9250_t
 	struct Axisf gyro;
 	struct Axisf acc;
 	struct Axisf attitude;
-	struct{
-		int yaw;
-		int pitch;
-		int ecd_yaw;
-	}angle;
 };
 
 typedef struct

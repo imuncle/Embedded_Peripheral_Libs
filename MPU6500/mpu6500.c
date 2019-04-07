@@ -7,7 +7,6 @@
 
 struct MPU9250_t mpu9250;
 
-
 BiasObj	gyroBiasRunning;
 int gyroBiasFound = 0;
 float accScaleSum = 0;
@@ -24,11 +23,7 @@ static float q1 = 0.0f;
 static float q2 = 0.0f;
 static float q3 = 0.0f;
 
-int yaw,pitch,roll;
-
 uint8_t imu_data[14]={0};
-
-int last_yaw,yaw_round;
 
 float faccx,faccy,faccz;
 
@@ -304,19 +299,4 @@ void imuUpdate(struct Axisf acc, struct Axisf gyro)
 	mpu9250.attitude.x = -asinf(-2*q1*q3 + 2*q0*q2) * RAD2DEG;	//pitch
 	mpu9250.attitude.y = atan2f(2*q2*q3 + 2*q0*q1, -2*q1*q1 - 2*q2*q2 + 1) * RAD2DEG;	//roll
 	mpu9250.attitude.z = atan2f(2*q1*q2 + 2*q0*q3, -2*q2*q2 - 2*q3*q3 + 1) * RAD2DEG;	//yaw
-	
-	last_yaw = mpu9250.angle.yaw;
-	
-	mpu9250.angle.yaw = mpu9250.attitude.z*22.756f;
-	mpu9250.angle.pitch = mpu9250.attitude.x*22.756f;
-	
-	if(yaw - last_yaw > 4096)
-	{
-		yaw_round--;
-	}
-	else if(yaw - last_yaw < -4096)
-	{
-		yaw_round++;
-	}
-	mpu9250.angle.ecd_yaw = mpu9250.angle.yaw + yaw_round * 8192;
 }
