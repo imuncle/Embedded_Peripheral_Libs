@@ -1,8 +1,7 @@
 #ifndef MPU9250_H
 #define MPU9250_H
 
-//在读取时，注意需要人工将地址左移1位（I2C读写为左对齐，第8位要存读写标志位）
-#define MPU9250_ADDRESS 0xD0   //AD0接GND时地址为0x68，接VCC时地址为0x69
+#define MPU6500_ADDRESS 0xD0   //AD0接GND时地址为0x68，接VCC时地址为0x69
 #define MPU_PWR_MGMT1_REG		0X6B	//电源管理寄存器1
 #define MPU_GYRO_CFG_REG		0X1B	//陀螺仪配置寄存器
 #define MPU_ACCEL_CFG_REG		0X1C	//加速度计配置寄存器
@@ -63,7 +62,7 @@ struct Axisi
 	int z;
 };
 
-struct MPU9250_t
+struct MPU6500_t
 {
 	struct Axisf gyro;
 	struct Axisf acc;
@@ -79,7 +78,7 @@ typedef struct
 }BiasObj;
 
 extern BiasObj	gyroBiasRunning;;
-extern struct MPU9250_t mpu9250;
+extern struct MPU6500_t mpu6500;
 
 int MPU6500_Init(void);
 int GetImuData(void);

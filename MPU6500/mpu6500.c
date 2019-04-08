@@ -5,7 +5,7 @@
 #define DEG2RAD		0.017453293f	/*度转弧度*/
 #define RAD2DEG		57.29578f		/*弧度转度*/
 
-struct MPU9250_t mpu9250;
+struct MPU6500_t mpu6500;
 
 BiasObj	gyroBiasRunning;
 int gyroBiasFound = 0;
@@ -35,42 +35,42 @@ int MPU6500_Init(void)
 {
 	unsigned char pdata;
 	//检查设备是否准备好
-	HAL_I2C_IsDeviceReady(&hi2c2, MPU9250_ADDRESS, 10, 10);
+	HAL_I2C_IsDeviceReady(&hi2c2, MPU6500_ADDRESS, 10, 10);
 
 	pdata=0x80; //复位MPU
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_PWR_MGMT1_REG, 1, &pdata, 1, 10);
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_PWR_MGMT1_REG, 1, &pdata, 1, 10);
 	
 	HAL_Delay(500);  //复位后需要等待一段时间，等待芯片复位完成
 
 	pdata=0x00;	//唤醒MPU
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_PWR_MGMT1_REG, 1, &pdata, 1, 10);
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_PWR_MGMT1_REG, 1, &pdata, 1, 10);
 	
-	HAL_I2C_Mem_Read(&hi2c2, MPU9250_ADDRESS, MPU_WHO_I_AM, 1, &pdata, 1, 10);
+	HAL_I2C_Mem_Read(&hi2c2, MPU6500_ADDRESS, MPU_WHO_I_AM, 1, &pdata, 1, 10);
 	if(pdata != 0x71) return 1;
 	
 	pdata=0x18; //设置量程为2000
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_GYRO_CFG_REG, 1, &pdata, 1, 10); 
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_GYRO_CFG_REG, 1, &pdata, 1, 10); 
 
 	pdata=0x08;	//设置加速度传感器量程±4g
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_ACCEL_CFG_REG, 1, &pdata, 1, 10); 
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_ACCEL_CFG_REG, 1, &pdata, 1, 10); 
 
 	pdata=0; //陀螺仪采样分频设置
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_SAMPLE_RATE_REG, 1, &pdata, 1, 10); 
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_SAMPLE_RATE_REG, 1, &pdata, 1, 10); 
 
 	pdata=0;	//关闭所有中断
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_INT_EN_REG, 1, &pdata, 1, 10); 
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_INT_EN_REG, 1, &pdata, 1, 10); 
 	
 	pdata=0;	//关闭FIFO
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_FIFO_EN_REG, 1, &pdata, 1, 10); 
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_FIFO_EN_REG, 1, &pdata, 1, 10); 
 	
-	pdata = 6;	//设置MPU9250的数字低通滤波器
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_CFG_REG, 1, &pdata, 1, 10);
+	pdata = 6;	//设置mpu6500的数字低通滤波器
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_CFG_REG, 1, &pdata, 1, 10);
 
 	pdata = 0x0C;
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_ACCEL_DLPF_DERG, 1, &pdata, 1, 10);
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_ACCEL_DLPF_DERG, 1, &pdata, 1, 10);
 	
 	pdata=0;	//使能陀螺仪和加速度工作
-	HAL_I2C_Mem_Write(&hi2c2, MPU9250_ADDRESS, MPU_PWR_MGMT2_REG, 1, &pdata, 1, 10);
+	HAL_I2C_Mem_Write(&hi2c2, MPU6500_ADDRESS, MPU_PWR_MGMT2_REG, 1, &pdata, 1, 10);
 	
 	return 0;
 }
@@ -178,7 +178,7 @@ int processAccScale(int16_t ax, int16_t ay, int16_t az)
 
 int GetImuData(void)
 {
-	if(HAL_I2C_Mem_Read(&hi2c2, MPU9250_ADDRESS, MPU_ACCEL_XOUTH_REG, 1, imu_data, 14, 10) == HAL_OK)	//读取陀螺仪和加速度计的数据
+	if(HAL_I2C_Mem_Read(&hi2c2, MPU6500_ADDRESS, MPU_ACCEL_XOUTH_REG, 1, imu_data, 14, 10) == HAL_OK)	//读取陀螺仪和加速度计的数据
 	{
 		return 1;
 	}
@@ -215,17 +215,17 @@ void imuDataHandle(void)
 	fgyroy = (float)(gyroy-gyroBias.y)/gyro_sensitivity;
 	fgyroz = (float)(gyroz-gyroBias.z)/gyro_sensitivity;
 	
-	mpu9250.gyro.x = 0.8f*fgyrox + 0.2f*mpu9250.gyro.x;
-	mpu9250.gyro.y = 0.8f*fgyroy + 0.2f*mpu9250.gyro.y;
-	mpu9250.gyro.z = 0.8f*fgyroz + 0.2f*mpu9250.gyro.z;
+	mpu6500.gyro.x = 0.8f*fgyrox + 0.2f*mpu6500.gyro.x;
+	mpu6500.gyro.y = 0.8f*fgyroy + 0.2f*mpu6500.gyro.y;
+	mpu6500.gyro.z = 0.8f*fgyroz + 0.2f*mpu6500.gyro.z;
 	
 	faccx = -(float)(accx)/acc_sensitivity/accScale;
 	faccy = (float)(accy)/acc_sensitivity/accScale;
 	faccz = (float)(accz)/acc_sensitivity/accScale;
 	
-	mpu9250.acc.x = 0.2f*faccx + 0.8f*mpu9250.acc.x;
-	mpu9250.acc.y = 0.2f*faccy + 0.8f*mpu9250.acc.y;
-	mpu9250.acc.z = 0.2f*faccz + 0.8f*mpu9250.acc.z;
+	mpu6500.acc.x = 0.2f*faccx + 0.8f*mpu6500.acc.x;
+	mpu6500.acc.y = 0.2f*faccy + 0.8f*mpu6500.acc.y;
+	mpu6500.acc.z = 0.2f*faccz + 0.8f*mpu6500.acc.z;
 }
 
 void imuUpdate(struct Axisf acc, struct Axisf gyro)
@@ -296,7 +296,7 @@ void imuUpdate(struct Axisf acc, struct Axisf gyro)
 	q3 /= normalise;
 	
 	/* 由四元数求解欧拉角 */
-	mpu9250.attitude.x = -asinf(-2*q1*q3 + 2*q0*q2) * RAD2DEG;	//pitch
-	mpu9250.attitude.y = atan2f(2*q2*q3 + 2*q0*q1, -2*q1*q1 - 2*q2*q2 + 1) * RAD2DEG;	//roll
-	mpu9250.attitude.z = atan2f(2*q1*q2 + 2*q0*q3, -2*q2*q2 - 2*q3*q3 + 1) * RAD2DEG;	//yaw
+	mpu6500.attitude.x = -asinf(-2*q1*q3 + 2*q0*q2) * RAD2DEG;	//pitch
+	mpu6500.attitude.y = atan2f(2*q2*q3 + 2*q0*q1, -2*q1*q1 - 2*q2*q2 + 1) * RAD2DEG;	//roll
+	mpu6500.attitude.z = atan2f(2*q1*q2 + 2*q0*q3, -2*q2*q2 - 2*q3*q3 + 1) * RAD2DEG;	//yaw
 }
