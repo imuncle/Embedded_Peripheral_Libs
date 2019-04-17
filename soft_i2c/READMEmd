@@ -1,0 +1,32 @@
+# 注意事项
+本份代码使用的是软件模拟的IIC通信，使用的接口如下：
+```c
+#define IIC_GPIO GPIOB
+#define SDA GPIO_PIN_11
+#define SCL GPIO_PIN_10
+```
+请注意修在`soft_i2c.h`中改为自己使用的接口。
+
+# 函数接口
+function_name|brief
+:--:|:--:
+IIC_ReadData|IIC读取数据函数
+IIC_WriteData|IIC写入函数
+
+上述两个函数返回`0`表示操作成功，返回`0xff`表示操作失败。
+
+# 调用示例
+```c
+if(IIC_ReadData(MPU6050_ADDRESS, MPU_WHO_I_AM, &temp_data, 1) == 0)
+{
+    if(temp_data != 0x68)
+    {
+        return 0xff;
+    }
+}
+
+if(IIC_WriteData(MPU6050_ADDRESS,MPU_CFG_REG,6) == 0xff)
+{
+    return 0xff;
+}
+```
