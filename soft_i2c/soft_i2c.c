@@ -9,11 +9,9 @@
 
 void IIC_Delay(uint16_t time)
 {
-	uint16_t differ = 0xffff-time-6;
-	__HAL_TIM_SET_COUNTER(&htim7, differ);
-	HAL_TIM_Base_Start(&htim7);
-	while(__HAL_TIM_GET_COUNTER(&htim7) < 0xffff-6){}	
-	HAL_TIM_Base_Stop(&htim7);
+	uint16_t count;
+	count = time * 6;
+	while(count --);
 }
 
 void IIC_SDA_Out(void)
